@@ -1,0 +1,3025 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSight · Причинно-следственный анализ</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+  :root {
+    --cream: #faf8f5;
+    --pearl: #f4f1ec;
+    --blush: #f0e8e2;
+    --sage: #e8ede8;
+    --lavender: #ece8f0;
+    --sky: #e5eef5;
+    --mint: #e4efed;
+    --champagne: #f5f0e8;
+    --rose: #f5e8ec;
+    --warm-gray: #9a9290;
+    --mid-gray: #6b6866;
+    --dark: #1a1714;
+    --glass: rgba(255,255,255,0.72);
+    --glass-border: rgba(255,255,255,0.85);
+    --shadow-soft: 0 8px 40px rgba(100,80,60,0.08);
+    --shadow-hover: 0 20px 60px rgba(100,80,60,0.14);
+    --radius: 20px;
+    --radius-lg: 28px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── MESH BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(240,232,226,0.7) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 80% at 90% 80%, rgba(236,232,240,0.5) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(229,238,245,0.4) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 10%, rgba(228,239,237,0.4) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+    background: rgba(250,248,245,0.82);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+  }
+
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--dark);
+  }
+
+  .nav-logo span { color: var(--warm-gray); font-weight: 300; font-style: italic; }
+
+  .nav-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--warm-gray);
+  }
+
+  .nav-breadcrumb .crumb {
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .nav-breadcrumb .crumb:hover { color: var(--dark); }
+  .nav-breadcrumb .sep { opacity: 0.4; }
+  .nav-breadcrumb .current { color: var(--dark); font-weight: 500; }
+
+  .nav-back {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .nav-back:hover { color: var(--dark); }
+  .nav-back svg { width: 16px; height: 16px; }
+
+  /* ─── PAGES ─── */
+  .page {
+    display: none;
+    min-height: 100vh;
+    padding: 100px 40px 60px;
+    position: relative;
+    z-index: 1;
+    animation: pageIn 0.5s cubic-bezier(0.22,1,0.36,1);
+  }
+  .page.active { display: block; }
+
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── HOME ─── */
+  .home-hero {
+    max-width: 1100px;
+    margin: 0 auto 60px;
+    text-align: center;
+  }
+
+  .home-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .home-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(42px, 6vw, 76px);
+    font-weight: 300;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--dark);
+    margin-bottom: 24px;
+  }
+  .home-title em { font-style: italic; color: var(--warm-gray); }
+
+  .home-subtitle {
+    font-size: 17px;
+    color: var(--mid-gray);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ─── CHAPTER GRID ─── */
+  .chapter-grid {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .chapter-card {
+    position: relative;
+    background: var(--glass);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px 28px;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s ease, background 0.3s;
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .chapter-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 60%);
+    pointer-events: none;
+  }
+
+  .chapter-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .chapter-card.color-blush { background: rgba(240,232,226,0.82); }
+  .chapter-card.color-sky { background: rgba(229,238,245,0.82); }
+  .chapter-card.color-sage { background: rgba(232,237,232,0.82); }
+  .chapter-card.color-lavender { background: rgba(236,232,240,0.82); }
+  .chapter-card.color-mint { background: rgba(228,239,237,0.82); }
+  .chapter-card.color-champagne { background: rgba(245,240,232,0.82); }
+  .chapter-card.color-rose { background: rgba(245,232,236,0.82); }
+
+  .chapter-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--warm-gray);
+    margin-bottom: 14px;
+    font-weight: 400;
+  }
+
+  .chapter-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+    line-height: 1;
+  }
+
+  .chapter-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--dark);
+    margin-bottom: 10px;
+  }
+
+  .chapter-desc {
+    font-size: 13.5px;
+    color: var(--mid-gray);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  .chapter-arrow {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s, background 0.3s;
+  }
+  .chapter-card:hover .chapter-arrow {
+    transform: translateX(3px);
+    background: rgba(255,255,255,0.9);
+  }
+
+  .chapter-tag {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.7);
+    color: var(--mid-gray);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  /* ─── CHAPTER PAGE ─── */
+  .chapter-header {
+    max-width: 860px;
+    margin: 0 auto 50px;
+  }
+
+  .chapter-page-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .chapter-page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--dark);
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+  .chapter-page-title em { font-style: italic; }
+
+  .chapter-page-lead {
+    font-size: 16px;
+    color: var(--mid-gray);
+    line-height: 1.7;
+    max-width: 640px;
+    font-weight: 300;
+  }
+
+  /* ─── SECTION GRID ─── */
+  .section-grid {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-card {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+
+  .section-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    position: relative;
+  }
+
+  .section-card-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .section-card-text { flex: 1; }
+
+  .section-card-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 3px;
+  }
+
+  .section-card-sub {
+    font-size: 13px;
+    color: var(--warm-gray);
+    font-weight: 300;
+  }
+
+  .section-card-badge {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .badge-cause { background: rgba(229,238,245,0.8); color: #4a7a9b; }
+  .badge-effect { background: rgba(240,232,226,0.8); color: #9b6a4a; }
+  .badge-insight { background: rgba(236,232,240,0.8); color: #7a6a9b; }
+  .badge-strategy { background: rgba(228,239,237,0.8); color: #4a9b7a; }
+
+  /* ─── DETAIL PAGE ─── */
+  .detail-content {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  /* ─── SLIDER WIDGET ─── */
+  .slider-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .slider-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 28px;
+    color: var(--dark);
+  }
+
+  .slider-row {
+    margin-bottom: 22px;
+  }
+
+  .slider-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .slider-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+  }
+
+  .slider-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .slider-track {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(154,146,144,0.18);
+    margin-bottom: 6px;
+  }
+
+  .slider-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: transparent;
+    position: absolute;
+    top: 0; left: 0;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid rgba(154,146,144,0.4);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: box-shadow 0.2s, transform 0.2s;
+    margin-top: -6px;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+    transform: scale(1.1);
+  }
+
+  .slider-outcome {
+    margin-top: 28px;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .outcome-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .outcome-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  .outcome-desc {
+    font-size: 13px;
+    color: var(--mid-gray);
+    font-weight: 300;
+  }
+
+  /* ─── RISK MAP ─── */
+  .risk-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    background: rgba(154,146,144,0.12);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    aspect-ratio: 16/9;
+  }
+
+  .risk-cell {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .risk-cell:hover { opacity: 0.9; }
+
+  .risk-cell.q1 { background: linear-gradient(135deg, rgba(245,232,236,0.9), rgba(240,220,228,0.8)); } /* low prob, low impact */
+  .risk-cell.q2 { background: linear-gradient(135deg, rgba(245,240,232,0.9), rgba(240,228,212,0.8)); } /* high prob, low impact */
+  .risk-cell.q3 { background: linear-gradient(135deg, rgba(229,238,245,0.9), rgba(215,230,242,0.8)); } /* low prob, high impact */
+  .risk-cell.q4 { background: linear-gradient(135deg, rgba(236,232,240,0.9), rgba(220,214,238,0.8)); } /* high prob, high impact */
+
+  .risk-cell-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+
+  .risk-dot-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .risk-dot {
+    position: absolute;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    pointer-events: all;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    white-space: nowrap;
+    line-height: 1;
+    animation: dotFloat 0.6s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .risk-dot:hover { transform: scale(1.15); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+
+  @keyframes dotFloat {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .risk-axes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--warm-gray);
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 16px;
+  }
+
+  .risk-detail {
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.9);
+    font-size: 14px;
+    color: var(--mid-gray);
+    min-height: 60px;
+    transition: all 0.3s;
+    line-height: 1.55;
+  }
+
+  .risk-detail-name {
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  /* ─── COMPARISON TABLE ─── */
+  .compare-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .compare-header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid rgba(154,146,144,0.12);
+  }
+
+  .compare-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .compare-table th {
+    padding: 14px 20px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warm-gray);
+    font-weight: 500;
+    text-align: left;
+    background: rgba(250,248,245,0.5);
+    border-bottom: 1px solid rgba(154,146,144,0.1);
+  }
+
+  .compare-table td {
+    padding: 14px 20px;
+    font-size: 14px;
+    color: var(--dark);
+    border-bottom: 1px solid rgba(154,146,144,0.06);
+    transition: background 0.2s;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .compare-table tr:hover td { background: rgba(255,255,255,0.5); }
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .compare-table td.metric { font-weight: 500; color: var(--mid-gray); font-size: 13px; }
+
+  .cell-win {
+    color: #4a8c6a;
+    font-weight: 600;
+  }
+
+  .cell-mid {
+    color: #8a7a4a;
+    font-weight: 500;
+  }
+
+  .cell-loss {
+    color: #9b5a5a;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  /* ─── TIMELINE ─── */
+  .timeline-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+  }
+
+  .timeline-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 32px;
+  }
+
+  .timeline-track {
+    position: relative;
+    padding-left: 36px;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 10px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(154,146,144,0.3), rgba(154,146,144,0.08));
+    border-radius: 1px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 28px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .timeline-item:hover { transform: translateX(4px); }
+  .timeline-item:last-child { margin-bottom: 0; }
+
+  .timeline-dot {
+    position: absolute;
+    left: -30px;
+    top: 8px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: white;
+    transition: transform 0.2s;
+  }
+  .timeline-item:hover .timeline-dot { transform: scale(1.3); }
+
+  .timeline-phase {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .timeline-event {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--dark);
+    margin-bottom: 5px;
+  }
+
+  .timeline-cause {
+    font-size: 13px;
+    color: var(--mid-gray);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .timeline-result {
+    display: inline-block;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(255,255,255,0.9);
+    color: var(--mid-gray);
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
+  /* ─── FUNNEL ─── */
+  .funnel-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .funnel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 28px;
+  }
+
+  .funnel-steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .funnel-step {
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+    position: relative;
+  }
+
+  .funnel-step:hover { opacity: 0.85; transform: scaleY(1.02); }
+
+  .funnel-step-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    margin-bottom: 2px;
+  }
+
+  .funnel-step-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+
+  .funnel-arrow {
+    font-size: 16px;
+    color: var(--warm-gray);
+    opacity: 0.5;
+    margin: 2px 0;
+  }
+
+  /* ─── GEO MAP VISUAL ─── */
+  .geo-widget {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .geo-map-svg {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 12px;
+    background: rgba(229,238,245,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .geo-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .geo-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--mid-gray);
+  }
+
+  .geo-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ─── INFO CARDS ─── */
+  .info-card {
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .info-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-card-body {
+    font-size: 14px;
+    color: var(--mid-gray);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  .info-card-body strong {
+    color: var(--dark);
+    font-weight: 600;
+  }
+
+  /* ─── FORMULA BLOCK ─── */
+  .formula-block {
+    background: rgba(229,238,245,0.5);
+    border: 1px solid rgba(154,180,200,0.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    color: var(--dark);
+    text-align: center;
+  }
+
+  /* ─── PROS/CONS ─── */
+  .pros-cons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .pros-block, .cons-block {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .pros-header, .cons-header {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pros-header { color: #4a8c6a; }
+  .cons-header { color: #9b5a5a; }
+
+  .pros-item, .cons-item {
+    font-size: 13.5px;
+    color: var(--mid-gray);
+    margin-bottom: 10px;
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+    font-weight: 300;
+  }
+
+  .pros-item::before {
+    content: '↑';
+    position: absolute;
+    left: 0;
+    color: #4a8c6a;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .cons-item::before {
+    content: '↓';
+    position: absolute;
+    left: 0;
+    color: #9b5a5a;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  /* ─── DATA SOURCES GRID ─── */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .source-card {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .source-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+  .source-icon { font-size: 24px; margin-bottom: 10px; }
+
+  .source-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+
+  .source-desc {
+    font-size: 12px;
+    color: var(--warm-gray);
+    line-height: 1.45;
+    font-weight: 300;
+  }
+
+  .source-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+
+  .tag-free { background: rgba(228,239,237,0.8); color: #4a8c6a; }
+  .tag-paid { background: rgba(245,240,232,0.8); color: #8a6a3a; }
+  .tag-api { background: rgba(229,238,245,0.8); color: #4a6a9b; }
+
+  /* ─── SECTION CTA ─── */
+  .section-divider {
+    max-width: 800px;
+    margin: 40px auto;
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(154,146,144,0.2), transparent);
+  }
+
+  /* ─── BOTTOM NAV ─── */
+  .bottom-nav {
+    max-width: 800px;
+    margin: 40px auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-top: 1px solid rgba(154,146,144,0.12);
+  }
+
+  .bottom-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--warm-gray);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    transition: color 0.2s;
+  }
+  .bottom-nav-btn:hover { color: var(--dark); }
+
+  /* ─── FLOAT NUMBERS ─── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+  }
+
+  .stat-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--warm-gray);
+    font-weight: 400;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── MOBILE ─── */
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; }
+    .page { padding: 88px 20px 50px; }
+    .chapter-grid { grid-template-columns: 1fr; }
+    .pros-cons { grid-template-columns: 1fr; }
+    .sources-grid { grid-template-columns: 1fr 1fr; }
+    .stat-row { grid-template-columns: 1fr 1fr; }
+    .compare-table { font-size: 12px; }
+    .compare-table th, .compare-table td { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Geo<span>Sight</span></div>
+  <div class="nav-breadcrumb" id="breadcrumb">
+    <span class="crumb current">Главная</span>
+  </div>
+  <button class="nav-back" id="navBack" onclick="goBack()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M19 12H5M12 5l-7 7 7 7"/>
+    </svg>
+    Назад
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: HOME -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="home-eyebrow">Причинно-следственный анализ · Полная карта</div>
+    <h1 class="home-title">От маркетплейса<br>к <em>геосервису</em></h1>
+    <p class="home-subtitle">Интерактивный анализ бизнес-логики, данных о покупках районного масштаба и стратегии построения собственной аналитики.</p>
+  </div>
+
+  <div class="chapter-grid">
+    <div class="chapter-card color-sky" onclick="goTo('d2c')">
+      <div class="chapter-number">01</div>
+      
+      <div class="chapter-tag">Бизнес-модель</div>
+      <div class="chapter-title">D2C vs Маркетплейс</div>
+      <div class="chapter-desc">Маржинальность, контроль над данными и ценовая чувствительность покупателей.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-blush" onclick="goTo('pvz')">
+      <div class="chapter-number">02</div>
+      
+      <div class="chapter-tag">Инфраструктура</div>
+      <div class="chapter-title">Экономика ПВЗ</div>
+      <div class="chapter-desc">Чистая прибыль, мульти-ПВЗ, риски и сетевой эффект.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-sage" onclick="goTo('data')">
+      <div class="chapter-number">03</div>
+      
+      <div class="chapter-tag">Данные</div>
+      <div class="chapter-title">Источники данных</div>
+      <div class="chapter-desc">ОФД, банки, телеком, геоаналитика и зарубежные аналоги.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-lavender" onclick="goTo('mechanics')">
+      <div class="chapter-number">04</div>
+      
+      <div class="chapter-tag">Механики</div>
+      <div class="chapter-title">Игровые механики продаж</div>
+      <div class="chapter-desc">Аукционы, голландская модель, «своя цена» и честная прозрачность.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-mint" onclick="goTo('crm')">
+      <div class="chapter-number">05</div>
+      
+      <div class="chapter-tag">Технология</div>
+      <div class="chapter-title">CRM для ПВЗ-сети</div>
+      <div class="chapter-desc">Архитектура сбора обезличенных данных, 152-ФЗ и внедрение.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-champagne" onclick="goTo('geoservice')">
+      <div class="chapter-number">06</div>
+      
+      <div class="chapter-tag">Продукт</div>
+      <div class="chapter-title">Геосервис & Монетизация</div>
+      <div class="chapter-desc">Карты спроса, API, консалтинг для бизнеса и предиктивная аналитика.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+
+    <div class="chapter-card color-rose" onclick="goTo('global')" style="grid-column: 1 / -1; max-width: 400px;">
+      <div class="chapter-number">07</div>
+      
+      <div class="chapter-tag">Бенчмарк</div>
+      <div class="chapter-title">Мировые аналоги</div>
+      <div class="chapter-desc">Facteus, Placer.ai, Consumer Edge — как это решено за рубежом.</div>
+      <div class="chapter-arrow">→</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: D2C -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-d2c">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 01 · Бизнес-модель</div>
+    <h2 class="chapter-page-title">D2C vs <em>Маркетплейс</em></h2>
+    <p class="chapter-page-lead">Почему D2C выгоднее для бренда, почему сложнее для покупателя — и как найти точку баланса.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('d2c-compare')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Сравнительная таблица моделей</div>
+          <div class="section-card-sub">Маржа, удобство, данные, возвраты</div>
+        </div>
+        <div class="section-card-badge badge-insight">Таблица</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('d2c-margin')">
+      <div class="section-card-header">
+      
+        <div class="section-card-text">
+          <div class="section-card-title">Калькулятор маржинальности</div>
+          <div class="section-card-sub">Сравни прибыль: ПВЗ vs свой сайт</div>
+        </div>
+        <div class="section-card-badge badge-cause">Слайдер</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('d2c-tradeoff')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Компромисс: деньги vs время</div>
+          <div class="section-card-sub">Люди платят временем — едут сами</div>
+        </div>
+        <div class="section-card-badge badge-effect">Анализ</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('d2c-strategy')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">4 стратегии победы над маркетплейсом</div>
+          <div class="section-card-sub">Экосистема, логистика, гарантия, подписка</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Стратегия</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('d2c-price')">
+      <div class="section-card-header">
+       
+        <div class="section-card-text">
+          <div class="section-card-title">Иллюзия скидок и честная цена</div>
+          <div class="section-card-sub">Почему люди больше не верят скидкам</div>
+        </div>
+        <div class="section-card-badge badge-effect">Психология</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: PVZ -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-pvz">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 02 · Инфраструктура</div>
+    <h2 class="chapter-page-title">Экономика <em>ПВЗ</em></h2>
+    <p class="chapter-page-lead">Реальные цифры прибыли, карта рисков и сетевая модель.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('pvz-profit')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Калькулятор прибыли ПВЗ</div>
+          <div class="section-card-sub">Оборот, аренда, персонал → чистая прибыль</div>
+        </div>
+        <div class="section-card-badge badge-cause">Слайдер</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('pvz-risks')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Карта рисков ПВЗ</div>
+          <div class="section-card-sub">Матрица вероятность × ущерб</div>
+        </div>
+        <div class="section-card-badge badge-effect">Карта</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('pvz-multi')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Мульти-ПВЗ: экономика масштаба</div>
+          <div class="section-card-sub">Когда 5 точек выгоднее 1 в 5 раз</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Анализ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: DATA -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-data">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 03 · Данные</div>
+    <h2 class="chapter-page-title">Источники <em>данных</em></h2>
+    <p class="chapter-page-lead">Где взять реальные данные о том, что покупают люди в конкретном районе.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('data-sources')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Карта источников данных</div>
+          <div class="section-card-sub">ОФД, банки, телеком, маркетплейсы, геосервисы</div>
+        </div>
+        <div class="section-card-badge badge-insight">Обзор</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('data-ofd')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">ОФД: данные с касс</div>
+          <div class="section-card-sub">150 млрд чеков, детализация до SKU</div>
+        </div>
+        <div class="section-card-badge badge-cause">Ключевой</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('data-geo')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Геоаналитика: Геоинтеллект + кейс</div>
+          <div class="section-card-sub">Разбор статьи с Habr: Юнтолово vs Ланское</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Кейс</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('data-combine')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Объединение слоёв данных</div>
+          <div class="section-card-sub">Как собрать единый Data Warehouse</div>
+        </div>
+        <div class="section-card-badge badge-insight">Архитектура</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: MECHANICS -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-mechanics">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 04 · Механики</div>
+    <h2 class="chapter-page-title">Игровые <em>механики</em> продаж</h2>
+    <p class="chapter-page-lead">Аукционы, голландские торги, «своя цена» — как дать покупателю контроль без ущерба для маржи.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('mech-auction')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Типы аукционов и их маржа</div>
+          <div class="section-card-sub">Голландский, английский, «своя цена»</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Слайдер</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('mech-novelty')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Новизна, выбор, контроль</div>
+          <div class="section-card-sub">Психология маркетплейсов и как это обыграть</div>
+        </div>
+        <div class="section-card-badge badge-effect">Психология</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('mech-honest')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Честная цена как конкурентное оружие</div>
+          <div class="section-card-sub">Иллюзия скидок уничтожила доверие</div>
+        </div>
+        <div class="section-card-badge badge-cause">Стратегия</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: CRM -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-crm">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 05 · Технология</div>
+    <h2 class="chapter-page-title">CRM для <em>ПВЗ-сети</em></h2>
+    <p class="chapter-page-lead">Как внедрить CRM к тысячам ПВЗ и агрегировать обезличенные данные о покупках.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('crm-arch')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Архитектура системы</div>
+          <div class="section-card-sub">API → Data Warehouse → Геовизуализация</div>
+        </div>
+        <div class="section-card-badge badge-insight">Схема</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('crm-law')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">152-ФЗ и обезличивание</div>
+          <div class="section-card-sub">Что можно, что нельзя, как обезличить правильно</div>
+        </div>
+        <div class="section-card-badge badge-effect">Право</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('crm-onboard')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Онбординг владельцев ПВЗ</div>
+          <div class="section-card-sub">UVP, воронка внедрения, стимулы</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Воронка</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: GEOSERVICE -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-geoservice">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 06 · Продукт</div>
+    <h2 class="chapter-page-title">Геосервис & <em>Монетизация</em></h2>
+    <p class="chapter-page-lead">Как превратить данные ПВЗ в тепловые карты спроса и продавать аналитику бизнесу.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('geo-heatmap')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Интерактивная тепловая карта</div>
+          <div class="section-card-sub">Что покупают по районам города</div>
+        </div>
+        <div class="section-card-badge badge-insight">Карта</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('geo-monetize')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">5 моделей монетизации</div>
+          <div class="section-card-sub">Консалтинг, API, реклама, прогнозы, агрегаторы</div>
+        </div>
+        <div class="section-card-badge badge-strategy">Модели</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('geo-roadmap')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Дорожная карта запуска</div>
+          <div class="section-card-sub">MVP → Партнёры → Масштаб → Монетизация</div>
+        </div>
+        <div class="section-card-badge badge-cause">Таймлайн</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- PAGE: GLOBAL -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="page" id="page-global">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Глава 07 · Бенчмарк</div>
+    <h2 class="chapter-page-title">Мировые <em>аналоги</em></h2>
+    <p class="chapter-page-lead">Как этот вопрос решён за рубежом: Facteus, Placer.ai, Consumer Edge и другие.</p>
+  </div>
+
+  <div class="section-grid">
+    <div class="section-card" onclick="goToDetail('global-map')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Карта мировых игроков</div>
+          <div class="section-card-sub">США, Европа, Азия — кто и что предлагает</div>
+        </div>
+        <div class="section-card-badge badge-insight">Карта</div>
+      </div>
+    </div>
+
+    <div class="section-card" onclick="goToDetail('global-diff')">
+      <div class="section-card-header">
+        
+        <div class="section-card-text">
+          <div class="section-card-title">Россия vs Запад: ключевые отличия</div>
+          <div class="section-card-sub">ОФД vs транзакционные данные карт</div>
+        </div>
+        <div class="section-card-badge badge-effect">Сравнение</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- DETAIL PAGES -->
+<!-- ══════════════════════════════════════════════════════ -->
+
+<!-- D2C COMPARE -->
+<div class="page" id="page-d2c-compare">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">D2C vs Маркетплейс</div>
+    <h2 class="chapter-page-title">Сравнительная <em>таблица</em></h2>
+    <p class="chapter-page-lead">Нажмите на строку, чтобы увидеть причинно-следственную связь.</p>
+  </div>
+  <div class="detail-content">
+    <div class="compare-widget">
+      <div class="compare-header"><h3>D2C vs Маркетплейс · Полный разбор</h3></div>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Параметр</th>
+            <th>D2C (прямые продажи)</th>
+            <th>Маркетплейс (WB/Ozon)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr title="Причина: Нет комиссии. Следствие: выше маржа при той же цене.">
+            <td class="metric">Комиссия</td>
+            <td class="cell-win">1–2% (эквайринг)</td>
+            <td class="cell-loss">20–35% (комиссия + лог.)</td>
+          </tr>
+          <tr title="Причина: Маржа D2C позволяет снизить цену. Следствие: ценовое преимущество.">
+            <td class="metric">Ценовое преимущество</td>
+            <td class="cell-win">До −20% от цены на маркетплейсе</td>
+            <td class="cell-mid">Стабильно, но с наценкой</td>
+          </tr>
+          <tr>
+            <td class="metric">Данные о покупателях</td>
+            <td class="cell-win">Email, телефон, история → ретаргетинг</td>
+            <td class="cell-loss">Только в агрегированной аналитике</td>
+          </tr>
+          <tr>
+            <td class="metric">Удобство для покупателя</td>
+            <td class="cell-loss">Ниже: новый сайт, новые данные</td>
+            <td class="cell-win">Максимальное: единая корзина, рейтинги</td>
+          </tr>
+          <tr>
+            <td class="metric">Конкуренция на «полке»</td>
+            <td class="cell-win">Только ваш бренд</td>
+            <td class="cell-loss">Рядом сотни аналогов</td>
+          </tr>
+          <tr>
+            <td class="metric">Стоимость привлечения (CAC)</td>
+            <td class="cell-mid">Высокий без своей аудитории</td>
+            <td class="cell-win">0 руб. (площадка приводит сама)</td>
+          </tr>
+          <tr>
+            <td class="metric">Контроль над брендом</td>
+            <td class="cell-win">Полный: упаковка, письма, возвраты</td>
+            <td class="cell-loss">Ограничен правилами площадки</td>
+          </tr>
+          <tr>
+            <td class="metric">Время возврата</td>
+            <td class="cell-mid">Гибко: обмен, сертификат</td>
+            <td class="cell-win">Один клик в приложении</td>
+          </tr>
+          <tr>
+            <td class="metric">Лучший сценарий</td>
+            <td class="cell-win">Регулярные продажи, лояльный бренд</td>
+            <td class="cell-mid">Старт, тест ниш, коммодити</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-card">
+      
+      <div class="info-card-body"><strong>Комбинировать:</strong> маркетплейс — для охвата и привлечения новых клиентов, D2C — для удержания базы лояльных и накопления данных. Вкладыш с промокодом «дешевле на сайте» — классический инструмент перелива с площадки в собственный канал.</div>
+    </div>
+  </div>
+</div>
+
+<!-- D2C MARGIN SLIDER -->
+<div class="page" id="page-d2c-margin">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">D2C vs Маркетплейс</div>
+    <h2 class="chapter-page-title">Калькулятор <em>маржинальности</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Сравни прибыль: Маркетплейс vs D2C</div>
+
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Себестоимость товара</span>
+          <span class="slider-value" id="cost-val">500 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="cost-fill" style="background: linear-gradient(to right, #b8d0e0, #7aafc8); width:25%"></div>
+          <input type="range" min="100" max="2000" value="500" oninput="calcMargin()">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Комиссия маркетплейса, %</span>
+          <span class="slider-value" id="comm-val">25%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="comm-fill" style="background: linear-gradient(to right, #e0c8b8, #c87a5a); width:50%"></div>
+          <input type="range" min="10" max="40" value="25" oninput="calcMargin()">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Желаемая наценка, %</span>
+          <span class="slider-value" id="markup-val">50%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="markup-fill" style="background: linear-gradient(to right, #c8e0d0, #5ac87a); width:50%"></div>
+          <input type="range" min="10" max="200" value="50" oninput="calcMargin()">
+        </div>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">CAC (стоимость привлечения) в D2C</span>
+          <span class="slider-value" id="cac-val">150 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="cac-fill" style="background: linear-gradient(to right, #d0c8e0, #7a5ac8); width:15%"></div>
+          <input type="range" min="0" max="1000" value="150" oninput="calcMargin()">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;">
+        <div class="slider-outcome" style="background: linear-gradient(135deg, rgba(229,238,245,0.8), rgba(215,230,242,0.6));">
+          <div class="outcome-label">Маркетплейс · Цена</div>
+          <div class="outcome-value" id="mp-price">—</div>
+          <div class="outcome-desc">Ваша маржа: <span id="mp-margin">—</span></div>
+        </div>
+        <div class="slider-outcome" style="background: linear-gradient(135deg, rgba(228,239,237,0.8), rgba(210,235,225,0.6));">
+          <div class="outcome-label">D2C · Цена (ниже рынка)</div>
+          <div class="outcome-value" id="d2c-price">—</div>
+          <div class="outcome-desc">Ваша маржа: <span id="d2c-margin">—</span></div>
+        </div>
+      </div>
+      <div class="slider-outcome" id="margin-verdict" style="margin-top:12px; text-align:center; font-size:15px; color: var(--mid-gray);">
+        —
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D2C TRADEOFF -->
+<div class="page" id="page-d2c-tradeoff">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">D2C vs Маркетплейс</div>
+    <h2 class="chapter-page-title">Компромисс: деньги <em>vs</em> время</h2>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Для кого выгоднее D2C?</div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Ценочувствительность аудитории</span>
+          <span class="slider-value" id="price-sens-val">60%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="ps-fill" style="background: linear-gradient(to right, #e0d0c0, #c8803a); width:60%"></div>
+          <input type="range" min="0" max="100" value="60" oninput="calcTradeoff()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Разница в цене D2C vs МП, %</span>
+          <span class="slider-value" id="price-diff-val">20%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="pd-fill" style="background: linear-gradient(to right, #c8e0d0, #3a8a6a); width:20%"></div>
+          <input type="range" min="0" max="40" value="20" oninput="calcTradeoff()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Готовность тратить время (мин.)</span>
+          <span class="slider-value" id="time-val">15 мин</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="t-fill" style="background: linear-gradient(to right, #c8d0e0, #3a6aa8); width:30%"></div>
+          <input type="range" min="0" max="60" value="15" oninput="calcTradeoff()">
+        </div>
+      </div>
+      <div class="slider-outcome" id="tradeoff-result" style="text-align:center; margin-top:20px;">
+        <div class="outcome-label">Прогноз конверсии в D2C</div>
+        <div class="outcome-value" id="tradeoff-conv">—</div>
+        <div class="outcome-desc" id="tradeoff-desc">—</div>
+      </div>
+    </div>
+    <div class="pros-cons">
+      <div class="pros-block">
+        <div class="pros-header">✓ Маркетплейс (удобство)</div>
+        <div class="pros-item">Единая корзина и история</div>
+        <div class="pros-item">Надёжная доставка и отслеживание</div>
+        <div class="pros-item">Простой возврат — одна кнопка</div>
+        <div class="pros-item">Готовый трафик — нет CAC</div>
+        <div class="pros-item">Привычный интерфейс</div>
+      </div>
+      <div class="cons-block" style="border-color: rgba(255,255,255,0.85);">
+        <div class="cons-header" style="color:#4a8c6a;">✓ D2C (экономия)</div>
+        <div class="pros-item" style="color: var(--mid-gray);">Цена на 20–30% ниже</div>
+        <div class="pros-item" style="color: var(--mid-gray);">Кастомизация и уникальность</div>
+        <div class="pros-item" style="color: var(--mid-gray);">Накопительная лояльность</div>
+        <div class="pros-item" style="color: var(--mid-gray);">Прямая связь с брендом</div>
+        <div class="pros-item" style="color: var(--mid-gray);">Честные цены — нет «скидок-иллюзий»</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PVZ PROFIT -->
+<div class="page" id="page-pvz-profit">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Экономика ПВЗ</div>
+    <h2 class="chapter-page-title">Калькулятор <em>прибыли</em> ПВЗ</h2>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Рассчитай прибыль своей точки</div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Ежемесячный оборот</span>
+          <span class="slider-value" id="pvz-turnover-val">500 000 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="pvz-t-fill" style="background: linear-gradient(to right, #b8d0e0, #5a9ab8); width:33%"></div>
+          <input type="range" min="100000" max="1500000" step="50000" value="500000" oninput="calcPvz()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Комиссия от маркетплейса, %</span>
+          <span class="slider-value" id="pvz-comm-val">3.5%</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="pvz-c-fill" style="background: linear-gradient(to right, #d0e0c8, #6a9a5a); width:35%"></div>
+          <input type="range" min="1" max="7" step="0.5" value="3.5" oninput="calcPvz()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Аренда в месяц</span>
+          <span class="slider-value" id="pvz-rent-val">40 000 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="pvz-r-fill" style="background: linear-gradient(to right, #e0c8c8, #c85a5a); width:40%"></div>
+          <input type="range" min="10000" max="100000" step="5000" value="40000" oninput="calcPvz()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">ФОТ (1–2 сотрудника)</span>
+          <span class="slider-value" id="pvz-fot-val">50 000 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="pvz-f-fill" style="background: linear-gradient(to right, #e0d0c8, #c8803a); width:50%"></div>
+          <input type="range" min="20000" max="120000" step="5000" value="50000" oninput="calcPvz()">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:24px;">
+        <div class="slider-outcome">
+          <div class="outcome-label">Выручка</div>
+          <div class="outcome-value" id="pvz-income" style="font-size:28px;">—</div>
+          <div class="outcome-desc">комиссия маркетплейса</div>
+        </div>
+        <div class="slider-outcome">
+          <div class="outcome-label">Расходы</div>
+          <div class="outcome-value" id="pvz-costs" style="font-size:28px; color:#c85a5a;">—</div>
+          <div class="outcome-desc">аренда + ФОТ</div>
+        </div>
+        <div class="slider-outcome" id="pvz-result-block">
+          <div class="outcome-label">Чистая прибыль</div>
+          <div class="outcome-value" id="pvz-net">—</div>
+          <div class="outcome-desc" id="pvz-verdict">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-value">83K ₽</div>
+        <div class="stat-label">Средняя прибыль<br>по рынку</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">60%</div>
+        <div class="stat-label">ПВЗ закрываются<br>в первые 2 года</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">14%</div>
+        <div class="stat-label">Зарабатывают<br>свыше 2 млн/год</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PVZ RISKS -->
+<div class="page" id="page-pvz-risks">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Экономика ПВЗ</div>
+    <h2 class="chapter-page-title">Карта <em>рисков</em></h2>
+    <p class="chapter-page-lead">Нажмите на точку, чтобы узнать подробности о риске.</p>
+  </div>
+  <div class="detail-content">
+    <div class="risk-widget">
+      <div class="slider-title">Матрица рисков ПВЗ</div>
+      <div style="display:grid; grid-template-columns: 30px 1fr; gap:8px; margin-bottom:8px;">
+        <div style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:11px; color:var(--warm-gray); text-align:center; letter-spacing:0.1em; text-transform:uppercase; padding: 8px 0;">Вероятность</div>
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--warm-gray); padding:0 4px; margin-bottom:4px;">
+            <span>↑ Высокая</span>
+          </div>
+          <div class="risk-grid" id="riskGrid">
+            <!-- Q3: high impact, low prob -->
+            <div class="risk-cell q3">
+              <div class="risk-cell-label">Высокий ущерб / Низкая вероятность</div>
+            </div>
+            <!-- Q4: high impact, high prob -->
+            <div class="risk-cell q4">
+              <div class="risk-cell-label">Высокий ущерб / Высокая вероятность</div>
+            </div>
+            <!-- Q1: low impact, low prob -->
+            <div class="risk-cell q1">
+              <div class="risk-cell-label">Низкий ущерб / Низкая вероятность</div>
+            </div>
+            <!-- Q2: low impact, high prob -->
+            <div class="risk-cell q2">
+              <div class="risk-cell-label">Низкий ущерб / Высокая вероятность</div>
+            </div>
+            <!-- Dots are added by JS -->
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--warm-gray); padding:4px 4px 0;">
+            <span>← Низкая вероятность</span>
+            <span>Высокая вероятность →</span>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--warm-gray); margin-bottom:16px;">Высокий ущерб ↑ · Низкий ущерб ↓</div>
+      <div class="risk-detail" id="riskDetail">
+        <div style="color:var(--warm-gray); font-size:13px;">← Нажмите на риск, чтобы увидеть детали</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PVZ MULTI -->
+<div class="page" id="page-pvz-multi">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Экономика ПВЗ</div>
+    <h2 class="chapter-page-title">Мульти-ПВЗ: <em>экономика масштаба</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Как растёт прибыль с числом точек</div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Количество точек</span>
+          <span class="slider-value" id="multi-count-val">5</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="multi-fill" style="background: linear-gradient(to right, #c8d0e0, #4a6aa8); width:25%"></div>
+          <input type="range" min="1" max="20" value="5" oninput="calcMulti()">
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px;">
+        <div class="slider-outcome">
+          <div class="outcome-label">Суммарная прибыль</div>
+          <div class="outcome-value" id="multi-total">—</div>
+          <div class="outcome-desc">в месяц</div>
+        </div>
+        <div class="slider-outcome">
+          <div class="outcome-label">Рентабельность</div>
+          <div class="outcome-value" id="multi-roi">—</div>
+          <div class="outcome-desc">за счёт экономии на управлении</div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Моно-ПВЗ vs Мульти-ПВЗ</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Параметр</th><th>1 точка</th><th>Сеть 5+ точек</th></tr></thead>
+        <tbody>
+          <tr><td class="metric">Чистая прибыль/мес</td><td>16 000–50 000 ₽</td><td class="cell-win">200 000–270 000 ₽</td></tr>
+          <tr><td class="metric">Рентабельность</td><td>3–5%</td><td class="cell-win">до 38%</td></tr>
+          <tr><td class="metric">Операционный риск</td><td class="cell-loss">Высокий</td><td class="cell-win">Распределён</td></tr>
+          <tr><td class="metric">Инвестиции для старта</td><td class="cell-win">400–600 тыс.</td><td class="cell-loss">от 3 млн руб.</td></tr>
+          <tr><td class="metric">Окупаемость</td><td>2–6 мес.</td><td class="cell-mid">12–15 мес.</td></tr>
+          <tr><td class="metric">Ликвидность актива</td><td class="cell-loss">Низкая</td><td class="cell-win">Высокая — легко продать</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- DATA SOURCES -->
+<div class="page" id="page-data-sources">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Источники данных</div>
+    <h2 class="chapter-page-title">Карта <em>источников</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="sources-grid">
+      <div class="source-card">
+        
+        <div class="source-name">ОФД / Платформа ОФД</div>
+        <div class="source-desc">150 млрд чеков, детализация до SKU, 33% касс РФ</div>
+        <span class="source-tag tag-paid">Платный</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">СберАналитика</div>
+        <div class="source-desc">111 млн клиентов, транзакции + геолокация</div>
+        <span class="source-tag tag-paid">Платный</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">Билайн Big Data</div>
+        <div class="source-desc">Бизнес.Локатор: 100+ параметров локации</div>
+        <span class="source-tag tag-paid">Платный</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">2ГИС Геометр</div>
+        <div class="source-desc">Бесплатная аналитика покупателей, аудитория точки</div>
+        <span class="source-tag tag-free">Бесплатно</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">MPSTATS / Moneyplace</div>
+        <div class="source-desc">Аналитика продаж WB и Ozon по регионам</div>
+        <span class="source-tag tag-paid">от 4 800 ₽/мес</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">ФНС Геочеки</div>
+        <div class="source-desc">Средний чек и топ-3 категорий в районе, еженедельно</div>
+        <span class="source-tag tag-free">Бесплатно</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">PIM.Data</div>
+        <div class="source-desc">400 млн заказов, 59 млн профилей, привязка до улицы</div>
+        <span class="source-tag tag-paid">Платный</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">MPSTATS API</div>
+        <div class="source-desc">Программный доступ к базе данных маркетплейсов</div>
+        <span class="source-tag tag-api">API</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">Эвотор + Геоинтеллект</div>
+        <div class="source-desc">40+ групп товаров офлайн-розницы на карте</div>
+        <span class="source-tag tag-paid">Платный</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">⚡ Стратегия «быстрого старта»</div>
+      <div class="info-card-body">
+        1. <strong>Бесплатно:</strong> ФНС Геочеки + 2ГИС Геометр — получите общую картину<br>
+        2. <strong>Дёшево:</strong> MPSTATS (пробный 24ч) — проверьте тренды по категориям<br>
+        3. <strong>Точно:</strong> PIM.Data — детализация до улицы и профилей покупателей
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DATA GEO CASE -->
+<div class="page" id="page-data-geo">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Источники данных · Кейс Habr</div>
+    <h2 class="chapter-page-title">Геоинтеллект: <em>выбор локации</em></h2>
+    <p class="chapter-page-lead">Разбор статьи «Открываем ПВЗ с умом». Санкт-Петербург: Юнтолово vs Ланское vs Комендантский аэродром.</p>
+  </div>
+  <div class="detail-content">
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Сравнение округов СПб · Данные Геоинтеллект + DataLens</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Показатель</th><th>Юнтолово</th><th>Ланское</th><th>Комендантский</th></tr></thead>
+        <tbody>
+          <tr><td class="metric">Население</td><td>115 960</td><td>72 233</td><td>88 177</td></tr>
+          <tr><td class="metric">Работающих в БЦ</td><td>8 094</td><td>16 800</td><td>6 743</td></tr>
+          <tr><td class="metric">Суммарный спрос</td><td>124 054</td><td>89 033</td><td>94 920</td></tr>
+          <tr><td class="metric">Количество ПВЗ</td><td>25</td><td>9</td><td>130</td></tr>
+          <tr><td class="metric"><strong>Человек на 1 ПВЗ</strong></td><td>4 962</td><td class="cell-win"><strong>9 893</strong></td><td>730</td></tr>
+          <tr><td class="metric">Новых квартир 2024</td><td class="cell-win">3 152</td><td>1 028</td><td>1 800</td></tr>
+          <tr><td class="metric">Квартир на 1 ПВЗ</td><td class="cell-win">12.2</td><td>7.9</td><td>11.6</td></tr>
+          <tr><td class="metric">Вывод</td><td>Будущий рост</td><td class="cell-win">✅ Дефицит сейчас</td><td class="cell-loss">Перенасыщен</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Причинно-следственная цепочка</div>
+      <div class="info-card-body">
+        <strong>Причина:</strong> В Ланском всего 9 ПВЗ при населении 89 тыс. → нагрузка 9 893 чел/ПВЗ<br>
+        <strong>Следствие:</strong> Огромный неудовлетворённый спрос → высокая вероятность успеха нового ПВЗ<br><br>
+        <strong>Причина:</strong> В Юнтолово рекордный прирост жилья (3 152 кв. за год)<br>
+        <strong>Следствие:</strong> Население растёт → будущий спрос выше нынешнего → сейчас войти выгоднее
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Ограничения методики</div>
+      <div class="info-card-body">
+        Статья не учитывает: мобильность (человек едет в ПВЗ у работы, а не у дома), качество помещения, реальную проходимость. Методика — стартовый фильтр, а не окончательный ответ.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUCTION MECHANICS -->
+<div class="page" id="page-mech-auction">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Игровые механики</div>
+    <h2 class="chapter-page-title">Типы <em>аукционов</em></h2>
+    <p class="chapter-page-lead">Как дать покупателю азарт и контроль, не теряя маржу.</p>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Голландский аукцион · Симулятор</div>
+      <p style="font-size:13px; color:var(--mid-gray); margin-bottom:20px; font-weight:300;">Цена падает каждые 10 минут. Вы сами решаете, когда покупать — но рискуете, что товар купят до вас.</p>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Стартовая цена</span>
+          <span class="slider-value" id="dutch-start-val">2 000 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="ds-fill" style="background: linear-gradient(to right, #c8d0e0, #4a6aa8); width:40%"></div>
+          <input type="range" min="500" max="5000" step="100" value="2000" oninput="calcDutch()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Шаг снижения (₽ / 10 мин)</span>
+          <span class="slider-value" id="dutch-step-val">50 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="dstep-fill" style="background: linear-gradient(to right, #e0d0c8, #c87a4a); width:25%"></div>
+          <input type="range" min="10" max="200" step="10" value="50" oninput="calcDutch()">
+        </div>
+      </div>
+      <div class="slider-row">
+        <div class="slider-label-row">
+          <span class="slider-name">Минимальная цена (порог маржи)</span>
+          <span class="slider-value" id="dutch-floor-val">800 ₽</span>
+        </div>
+        <div class="slider-track">
+          <div class="slider-fill" id="df-fill" style="background: linear-gradient(to right, #c8e0d0, #4a9a6a); width:16%"></div>
+          <input type="range" min="100" max="3000" step="100" value="800" oninput="calcDutch()">
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+        <div class="slider-outcome">
+          <div class="outcome-label">Диапазон продажи</div>
+          <div class="outcome-value" id="dutch-range" style="font-size:22px;">—</div>
+          <div class="outcome-desc">от старта до пола</div>
+        </div>
+        <div class="slider-outcome">
+          <div class="outcome-label">Время до минимума</div>
+          <div class="outcome-value" id="dutch-time" style="font-size:22px;">—</div>
+          <div class="outcome-desc">напряжение растёт</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Сравнение типов аукционов</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Тип</th><th>Риск продавца</th><th>Азарт для покупателя</th><th>Защита маржи</th></tr></thead>
+        <tbody>
+          <tr><td>Классический (низкий старт)</td><td class="cell-loss">Очень высокий</td><td class="cell-win">Максимальный</td><td class="cell-loss">Нет</td></tr>
+          <tr><td>Голландский (снижение)</td><td class="cell-mid">Средний</td><td class="cell-win">Высокий</td><td class="cell-win">Есть порог</td></tr>
+          <tr><td>«Своя цена» (диапазон)</td><td class="cell-win">Минимальный</td><td class="cell-mid">Средний</td><td class="cell-win">Да</td></tr>
+          <tr><td>Аукцион скидки</td><td class="cell-win">Минимальный</td><td class="cell-mid">Средний</td><td class="cell-win">Максимальная</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CRM ARCH -->
+<div class="page" id="page-crm-arch">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">CRM для ПВЗ-сети</div>
+    <h2 class="chapter-page-title">Архитектура <em>системы</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="timeline-widget">
+      <div class="timeline-title">Путь данных: от ПВЗ до тепловой карты</div>
+      <div class="timeline-track">
+        <div class="timeline-line"></div>
+
+        <div class="timeline-item" onclick="this.querySelector('.timeline-result').style.display='inline-block'">
+          <div class="timeline-dot" style="border-color:#4a8c9b; background:#e8f4f8;"></div>
+          <div class="timeline-phase" style="color:#4a8c9b;">Слой 1 · Сбор</div>
+          <div class="timeline-event">API маркетплейса → CRM каждого ПВЗ</div>
+          <div class="timeline-cause">Заказы приходят на точку: SKU, количество, время. CRM (TotalCRM, WireCRM) автоматически стягивает данные через API WB/Ozon каждые 30 мин.</div>
+          <span class="timeline-result" style="display:none;">Инструменты: ApiMonster, SelSup, Albato</span>
+        </div>
+
+        <div class="timeline-item" onclick="this.querySelector('.timeline-result').style.display='inline-block'">
+          <div class="timeline-dot" style="border-color:#6a9b4a; background:#f0f8e8;"></div>
+          <div class="timeline-phase" style="color:#6a9b4a;">Слой 2 · Обезличивание</div>
+          <div class="timeline-event">Персональные данные → Хэш или удаление</div>
+          <div class="timeline-cause">ФИО, телефон, адрес заменяются на анонимный ID. Товар, количество, дата, геоячейка (500×500м) — сохраняются. Это происходит до передачи в центральное хранилище.</div>
+          <span class="timeline-result" style="display:none;">Требование: 152-ФЗ, необратимость</span>
+        </div>
+
+        <div class="timeline-item" onclick="this.querySelector('.timeline-result').style.display='inline-block'">
+          <div class="timeline-dot" style="border-color:#9b6a4a; background:#f8f0e8;"></div>
+          <div class="timeline-phase" style="color:#9b6a4a;">Слой 3 · Хранение</div>
+          <div class="timeline-event">Data Warehouse (ClickHouse / PostgreSQL)</div>
+          <div class="timeline-cause">Обезличенные записи со всех тысяч ПВЗ агрегируются в единую базу. Схема: [геоячейка, категория, SKU, кол-во, дата, маркетплейс].</div>
+          <span class="timeline-result" style="display:none;">Объём: ~1 ТБ/год при 5000 ПВЗ</span>
+        </div>
+
+        <div class="timeline-item" onclick="this.querySelector('.timeline-result').style.display='inline-block'">
+          <div class="timeline-dot" style="border-color:#7a4a9b; background:#f0e8f8;"></div>
+          <div class="timeline-phase" style="color:#7a4a9b;">Слой 4 · Аналитика</div>
+          <div class="timeline-event">BI + ML-модели прогнозирования</div>
+          <div class="timeline-cause">DataLens или Power BI строят отчёты: топ товаров по районам, сезонность, рост/падение категорий. ML предсказывает будущий спрос.</div>
+          <span class="timeline-result" style="display:none;">Инструменты: DataLens, Power BI, Python ML</span>
+        </div>
+
+        <div class="timeline-item" onclick="this.querySelector('.timeline-result').style.display='inline-block'">
+          <div class="timeline-dot" style="border-color:#4a9b7a; background:#e8f8f0;"></div>
+          <div class="timeline-phase" style="color:#4a9b7a;">Слой 5 · Геосервис</div>
+          <div class="timeline-event">Тепловые карты + API для клиентов</div>
+          <div class="timeline-cause">Клиенты (бизнес, селлеры) видят интерактивные карты спроса по районам. API позволяет интегрировать данные в их системы. Геоинтеллект — для визуализации слоёв.</div>
+          <span class="timeline-result" style="display:none;">Монетизация: подписка, отчёты, консалтинг</span>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--warm-gray); margin-top:16px; text-align:center;">← Нажмите на шаг, чтобы увидеть инструменты</p>
+    </div>
+  </div>
+</div>
+
+<!-- GEO HEATMAP -->
+<div class="page" id="page-geo-heatmap">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Геосервис</div>
+    <h2 class="chapter-page-title">Тепловая карта <em>спроса</em></h2>
+    <p class="chapter-page-lead">Интерактивная визуализация: что покупают жители разных районов.</p>
+  </div>
+  <div class="detail-content">
+    <div class="geo-widget">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div class="slider-title" style="margin-bottom:0;">Карта района · Симуляция</div>
+        <div style="display:flex; gap:8px;">
+          <button onclick="setCategory('tech')" id="btn-tech" style="font-size:12px; padding:6px 12px; border-radius:20px; border:1px solid rgba(154,146,144,0.3); background:rgba(229,238,245,0.8); cursor:pointer; font-family:inherit; color:#4a6aa8; font-weight:600;"> Электроника</button>
+          <button onclick="setCategory('kids')" id="btn-kids" style="font-size:12px; padding:6px 12px; border-radius:20px; border:1px solid rgba(154,146,144,0.2); background:rgba(255,255,255,0.5); cursor:pointer; font-family:inherit; color:var(--mid-gray);"> Детские</button>
+          <button onclick="setCategory('food')" id="btn-food" style="font-size:12px; padding:6px 12px; border-radius:20px; border:1px solid rgba(154,146,144,0.2); background:rgba(255,255,255,0.5); cursor:pointer; font-family:inherit; color:var(--mid-gray);"> Продукты</button>
+        </div>
+      </div>
+      <canvas id="heatmapCanvas" width="760" height="360" style="width:100%; height:auto; border-radius:12px;"></canvas>
+      <div class="geo-legend" id="geoLegend">
+        <div class="geo-legend-item"><div class="geo-legend-dot" style="background:rgba(74,107,168,0.9);"></div>Очень высокий спрос</div>
+        <div class="geo-legend-item"><div class="geo-legend-dot" style="background:rgba(74,107,168,0.5);"></div>Средний спрос</div>
+        <div class="geo-legend-item"><div class="geo-legend-dot" style="background:rgba(74,107,168,0.15);"></div>Низкий спрос</div>
+        <div class="geo-legend-item"><div class="geo-legend-dot" style="background:#e8e0d8;"></div>Нет данных</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Как работает тепловая карта в реальном геосервисе</div>
+      <div class="info-card-body">
+        Каждая ячейка (500×500м) получает агрегированный показатель из обезличенных данных ПВЗ: количество заказов категории X за последние 30 дней. Интенсивность цвета = относительный спрос. Бизнес видит: «В квадрате A3 за месяц выдано 847 единиц электроники» — и принимает решение об открытии точки.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GEO MONETIZE -->
+<div class="page" id="page-geo-monetize">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Геосервис</div>
+    <h2 class="chapter-page-title">5 моделей <em>монетизации</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="funnel-widget">
+      <div class="funnel-title">Воронка ценности данных</div>
+      <div class="funnel-steps" id="funnelSteps">
+        <div class="funnel-step" style="width:100%; background: linear-gradient(135deg,#7a9bcf,#5a7ab8);" onclick="showFunnelDetail(0)">
+          <div class="funnel-step-label"> Геоотчёт по локации</div>
+          <div class="funnel-step-value">10–50 тыс. ₽</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:85%; background: linear-gradient(135deg,#8a6abf,#6a4aaf);" onclick="showFunnelDetail(1)">
+          <div class="funnel-step-label"> Ежемесячная аналитика</div>
+          <div class="funnel-step-value">30–100 тыс. ₽/мес</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:70%; background: linear-gradient(135deg,#4a8c9b,#2a6a7b);" onclick="showFunnelDetail(2)">
+          <div class="funnel-step-label"> Гиперлокальная реклама</div>
+          <div class="funnel-step-value">5–20 тыс. ₽/мес за район</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:55%; background: linear-gradient(135deg,#6a9b4a,#4a7b2a);" onclick="showFunnelDetail(3)">
+          <div class="funnel-step-label"> API-доступ для бизнеса</div>
+          <div class="funnel-step-value">50–150 тыс. ₽/мес</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:40%; background: linear-gradient(135deg,#c88a4a,#a86a2a);" onclick="showFunnelDetail(4)">
+          <div class="funnel-step-label"> Прогноз + консалтинг</div>
+          <div class="funnel-step-value">от 200 тыс. ₽ за проект</div>
+        </div>
+      </div>
+      <div class="risk-detail" id="funnelDetail" style="margin-top:20px;">
+        <div style="color:var(--warm-gray); font-size:13px;">← Нажмите на уровень, чтобы узнать детали</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GEO ROADMAP -->
+<div class="page" id="page-geo-roadmap">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Геосервис</div>
+    <h2 class="chapter-page-title">Дорожная <em>карта</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="timeline-widget">
+      <div class="timeline-title">От идеи до масштаба</div>
+      <div class="timeline-track">
+        <div class="timeline-line"></div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#4a8c6a; background:#e8f8f0;"></div>
+          <div class="timeline-phase" style="color:#4a8c6a;">Месяц 1–2 · MVP</div>
+          <div class="timeline-event">Сбор данных с 5–10 ПВЗ</div>
+          <div class="timeline-cause">Договориться с партнёрами, подключить TotalCRM + API WB/Ozon, собрать первые обезличенные данные. Проверить гипотезу: есть ли спрос на геоаналитику у бизнеса?</div>
+          <span class="timeline-result">Результат: первый датасет + 1–2 платящих клиента</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#4a6aa8; background:#e8eff8;"></div>
+          <div class="timeline-phase" style="color:#4a6aa8;">Месяц 3–6 · Продукт</div>
+          <div class="timeline-event">Масштаб до 50–100 ПВЗ + DataLens дашборд</div>
+          <div class="timeline-cause">Разработать стандартный отчёт по локации. Запустить первые продажи геоотчётов (10–30 тыс. ₽). Подключить геовизуализацию (Геоинтеллект или собственный вариант).</div>
+          <span class="timeline-result">Результат: 10+ клиентов, MRR 100–300 тыс. ₽</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#9b6a4a; background:#f8f0e8;"></div>
+          <div class="timeline-phase" style="color:#9b6a4a;">Месяц 7–12 · Масштаб</div>
+          <div class="timeline-event">500+ ПВЗ, API для клиентов</div>
+          <div class="timeline-cause">Запустить подписочную модель API-доступа. Привлечь первых якорных клиентов — ритейл-сети и крупных селлеров. Расширить покрытие на 3–5 городов.</div>
+          <span class="timeline-result">Результат: MRR 1–3 млн ₽, B2B-контракты</span>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#7a4a9b; background:#f0e8f8;"></div>
+          <div class="timeline-phase" style="color:#7a4a9b;">Год 2+ · Монополия данных</div>
+          <div class="timeline-event">1000+ ПВЗ, эксклюзивный актив</div>
+          <div class="timeline-cause">С ростом числа точек данные становятся уникальным активом, который невозможно воспроизвести быстро. Переход к ML-прогнозированию спроса и SaaS-модели.</div>
+          <span class="timeline-result">Результат: продажа данных крупным игрокам или привлечение инвестиций</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL MAP -->
+<div class="page" id="page-global-map">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Мировые аналоги</div>
+    <h2 class="chapter-page-title">Глобальные <em>игроки</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="sources-grid">
+      <div class="source-card">
+        <div class="source-icon">🇺🇸</div>
+        <div class="source-name">Facteus</div>
+        <div class="source-desc">Данные с дебетовых карт, уровень конкретного магазина, 5+ млн локаций</div>
+        <span class="source-tag tag-paid">США</span>
+      </div>
+      <div class="source-card">
+        <div class="source-icon">🇺🇸</div>
+        <div class="source-name">Placer.ai</div>
+        <div class="source-desc">Обезличенные геоданные смартфонов, трафик торговых зон</div>
+        <span class="source-tag tag-paid">США · Цитирует CNBC</span>
+      </div>
+      <div class="source-card">
+        <div class="source-icon">🇺🇸</div>
+        <div class="source-name">Consumer Edge</div>
+        <div class="source-desc">SKU-уровень из 100+ млн карт + панели чеков, глобальный охват</div>
+        <span class="source-tag tag-paid">Глобально</span>
+      </div>
+      <div class="source-card">
+        <div class="source-icon">🇺🇸</div>
+        <div class="source-name">InMarket</div>
+        <div class="source-desc">Реальное время: геозонирование + намерения покупателей</div>
+        <span class="source-tag tag-paid">США</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">NielsenIQ</div>
+        <div class="source-desc">FMCG мировой лидер: что, где, когда и по какой цене</div>
+        <span class="source-tag tag-paid">190+ стран</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">Experian</div>
+        <div class="source-desc">Глобальная база потребителей: 130+ стран, привязка к сетке</div>
+        <span class="source-tag tag-paid">Глобально</span>
+      </div>
+      <div class="source-card">
+        <div class="source-icon">🇵🇹</div>
+        <div class="source-name">SIBS Analytics</div>
+        <div class="source-desc">Транзакции → гео, отрасль, профиль. Терминальная инфраструктура</div>
+        <span class="source-tag tag-paid">Европа</span>
+      </div>
+      <div class="source-card">
+        
+        <div class="source-name">INTAGE Inc.</div>
+        <div class="source-desc">50+ стран, фокус Азия (11 регионов), реальное поведение</div>
+        <span class="source-tag tag-paid">Азия</span>
+      </div>
+      <div class="source-card">
+        <div class="source-icon">🇺🇸</div>
+        <div class="source-name">Cuebiq</div>
+        <div class="source-desc">Офлайн-посещения и consumer journeys, уровень округа</div>
+        <span class="source-tag tag-paid">США</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL DIFF -->
+<div class="page" id="page-global-diff">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Мировые аналоги</div>
+    <h2 class="chapter-page-title">Россия vs <em>Запад</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Ключевые отличия подходов к данным</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Аспект</th><th>🇷🇺 Россия (ОФД)</th><th> Запад (карточные данные)</th></tr></thead>
+        <tbody>
+          <tr><td class="metric">Источник данных</td><td class="cell-win">Онлайн-кассы (ФЗ-54)</td><td>Банковские карты + панели</td></tr>
+          <tr><td class="metric">Детализация</td><td class="cell-win">До конкретного товара (SKU)</td><td class="cell-loss">Сумма + категория магазина</td></tr>
+          <tr><td class="metric">Охват</td><td>~33–40% касс РФ (ОФД)</td><td class="cell-win">100+ млн карт (глобально)</td></tr>
+          <tr><td class="metric">Правовая база</td><td>152-ФЗ + 54-ФЗ</td><td>GDPR (EU) / CCPA (US)</td></tr>
+          <tr><td class="metric">Уникальное преимущество РФ</td><td class="cell-win">Обязательная онлайн-передача чеков → единый поток данных</td><td>—</td></tr>
+          <tr><td class="metric">Геодетализация</td><td class="cell-win">Адрес кассы точный</td><td class="cell-mid">Approximated (геозона)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Ключевой вывод</div>
+      <div class="info-card-body">
+        Россия имеет <strong>уникальное преимущество</strong>: закон обязывает все кассы передавать данные онлайн через ОФД. Это создаёт единый поток чековых данных с детализацией до SKU — чего нет ни в одной другой крупной стране. На Западе аналогичный уровень детализации достигается только через дорогостоящие панели и партнёрства с ритейлерами.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D2C STRATEGY PAGE -->
+<div class="page" id="page-d2c-strategy">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">D2C vs Маркетплейс</div>
+    <h2 class="chapter-page-title">4 стратегии <em>победы</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="info-card">
+      <div class="info-card-title"> 1. Стать «маркетплейсом внутри себя»</div>
+      <div class="info-card-body"><strong>Причина:</strong> покупатель идёт на Ozon за выбором → <strong>Решение:</strong> D2C-сайт предлагает экосистему (кофеварка + зёрна + фильтры + кружки) → <strong>Следствие:</strong> экономия 30% на комплекте + удобство одной корзины.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> 2. Инвертировать логистику</div>
+      <div class="info-card-body"><strong>Причина:</strong> Маркетплейс = центральный склад → долго в регионы → <strong>Решение:</strong> собственные ПВЗ / партнёрская выдача / самовывоз со скидкой → <strong>Следствие:</strong> неудобство превращается в осознанный выбор рационального покупателя.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> 3. Выиграть на возвратах и гарантии</div>
+      <div class="info-card-body"><strong>Причина:</strong> Маркетплейс → 30% возвратов в одежде → <strong>Решение:</strong> продлённая гарантия, бесплатный ремонт, обмен с доставкой → <strong>Следствие:</strong> доверие выше при той же или меньшей цене.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> 4. Подписка как крючок</div>
+      <div class="info-card-body"><strong>Причина:</strong> Корм для питомца — регулярная покупка → <strong>Решение:</strong> «каждые 2 недели со скидкой 15%» → <strong>Следствие:</strong> удобство выше, чем на маркетплейсе, цена ниже, LTV максимальный.</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Примечание</div>
+      <div class="info-card-body">Подписка работает только для <strong>регулярных покупок</strong> при <strong>стабильном доходе</strong> аудитории. Для ценочувствительной аудитории без денег на подписки — стратегии 1–3 + механики контроля (голландский аукцион, «своя цена»).</div>
+    </div>
+  </div>
+</div>
+
+<!-- D2C PRICE PAGE -->
+<div class="page" id="page-d2c-price">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">D2C vs Маркетплейс</div>
+    <h2 class="chapter-page-title">Иллюзия скидок и <em>честная цена</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="slider-widget">
+      <div class="slider-title">Как устроена «скидка» на маркетплейсе</div>
+      <div class="formula-block">
+        Цена «до» = 11 000 ₽ → Цена «сейчас» = 1 500 ₽ → Скидка -86%
+      </div>
+      <div class="info-card" style="margin-top:16px;">
+        <div class="info-card-title"> Реальность</div>
+        <div class="info-card-body">Товар никогда не продавался за 11 000 ₽. Это искусственно завышенная «зачёркнутая» цена для создания иллюзии выгоды. Покупатели уже научились не доверять таким скидкам.</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Честная цена как стратегия D2C</div>
+      <div class="info-card-body">
+        <strong>1. Прозрачное ценообразование:</strong> показываете структуру цены (себестоимость + наценка) → доверие растёт<br><br>
+        <strong>2. Скидка только как событие:</strong> «распродаём прошлую коллекцию» или «первая партия с браком маркировки» — людям верят, потому что это логично<br><br>
+        <strong>3. «Справедливая цена»:</strong> диапазон 1 200–1 800 ₽, покупатель сам выбирает → психологически убивает маркетплейс
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CRM LAW PAGE -->
+<div class="page" id="page-crm-law">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">CRM для ПВЗ-сети</div>
+    <h2 class="chapter-page-title">152-ФЗ и <em>обезличивание</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Что можно, что нельзя</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Действие</th><th>Статус</th><th>Основание</th></tr></thead>
+        <tbody>
+          <tr><td>Хранить ФИО + адрес клиента в CRM ПВЗ</td><td class="cell-win">✅ Можно</td><td>Нужно для выдачи заказа</td></tr>
+          <tr><td>Агрегировать: «в районе N купили 500 ед. категории X»</td><td class="cell-win">✅ Можно и продавать</td><td>Обезличенные статистические данные</td></tr>
+          <tr><td>Передавать третьим лицам ФИО + историю покупок</td><td class="cell-loss">❌ Запрещено</td><td>152-ФЗ ст. 6, нарушение согласия</td></tr>
+          <tr><td>Продавать данные «Иванов И. купил товар Z»</td><td class="cell-loss">❌ Запрещено</td><td>Персональные данные без согласия</td></tr>
+          <tr><td>Хранить обезличенные данные без ограничений</td><td class="cell-win">✅ Можно</td><td>Обезличенные → не ПДн</td></tr>
+          <tr><td>Использовать агрегат для рекламного таргетинга</td><td class="cell-loss">❌ Ограничено</td><td>Только при согласии субъектов</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Правило необратимости</div>
+      <div class="info-card-body">
+        Обезличивание должно быть <strong>необратимым</strong>: после замены ФИО на хэш или анонимный ID восстановить личность без отдельного «ключа» (которого у вас нет) невозможно. Это ключевое требование Роскомнадзора.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CRM ONBOARD PAGE -->
+<div class="page" id="page-crm-onboard">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">CRM для ПВЗ-сети</div>
+    <h2 class="chapter-page-title">Онбординг <em>владельцев ПВЗ</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="funnel-widget">
+      <div class="funnel-title">Воронка привлечения партнёров</div>
+      <div class="funnel-steps">
+        <div class="funnel-step" style="width:100%; background: linear-gradient(135deg,#5a7ab8,#3a5a98);">
+          <div class="funnel-step-label">Охват: 10 000 владельцев ПВЗ</div>
+          <div class="funnel-step-value">Таргет / контент / рекомендации</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:75%; background: linear-gradient(135deg,#6a5ab8,#4a3a98);">
+          <div class="funnel-step-label">Лиды: 1 500 заинтересованных</div>
+          <div class="funnel-step-value">UVP: «аналитика для вашей точки бесплатно»</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:55%; background: linear-gradient(135deg,#5a8a6a,#3a6a4a);">
+          <div class="funnel-step-label">Пробный период: 300 ПВЗ</div>
+          <div class="funnel-step-value">2 недели бесплатно, демо-дашборд</div>
+        </div>
+        <div class="funnel-arrow">↓</div>
+        <div class="funnel-step" style="width:35%; background: linear-gradient(135deg,#9a6a4a,#7a4a2a);">
+          <div class="funnel-step-label">Партнёры: 100 ПВЗ подписаны</div>
+          <div class="funnel-step-value">Доступ к CRM + аналитике = ценность</div>
+        </div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Ключевое UVP для владельца ПВЗ</div>
+      <div class="info-card-body">
+        «Вы получаете <strong>бесплатную аналитику</strong> по своей точке — что покупают ваши клиенты, как вы выглядите на фоне района, прогноз загруженности. В обмен: ваши <strong>обезличенные</strong> данные попадают в общую базу геосервиса. Это ничего вам не стоит и не нарушает закон.»
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MECH NOVELTY -->
+<div class="page" id="page-mech-novelty">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Игровые механики</div>
+    <h2 class="chapter-page-title">Новизна, выбор, <em>контроль</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="info-card">
+      <div class="info-card-title"> Психология маркетплейса</div>
+      <div class="info-card-body">
+        <strong>Причина:</strong> У людей нет денег на подписки, но есть потребность в новизне, выборе и контроле.<br>
+        <strong>Следствие:</strong> Маркетплейс с бесконечным каталогом даёт иллюзию бесконечного выбора — но на самом деле там китайский ширпотреб. Покупатель <strong>устал от стресса выбора</strong>.
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Как D2C даёт те же три потребности</div>
+      <div class="info-card-body">
+        <strong>Новизна → Дропы и микроколлекции:</strong> Новинки до выхода на маркетплейс, ограниченные партии, FOMO<br><br>
+        <strong>Выбор → Кастомизация:</strong> Цвет, размер, гравировка — вы собираете свой товар. Это реальный выбор, а не выбор из 50 000 одинаковых<br><br>
+        <strong>Контроль → Прозрачность:</strong> Видите реальную себестоимость, выбираете дату доставки, предлагаете идеи — бренд их воплощает
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Геймификация вместо скидок</div>
+      <div class="info-card-body">
+        Ежедневные аукционы одного товара · Кэшбэк правом первого доступа · «Приведи друга — скидка на любой товар» · Голосование за следующий продукт · Колесо фортуны при заказе от 1 000 ₽
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MECH HONEST -->
+<div class="page" id="page-mech-honest">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Игровые механики</div>
+    <h2 class="chapter-page-title">Честная цена как <em>оружие</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="timeline-widget">
+      <div class="timeline-title">Причинно-следственная цепочка доверия</div>
+      <div class="timeline-track">
+        <div class="timeline-line"></div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#c85a5a; background:#f8e8e8;"></div>
+          <div class="timeline-phase" style="color:#c85a5a;">Причина 1</div>
+          <div class="timeline-event">Маркетплейсы массово применяют псевдоскидки</div>
+          <div class="timeline-cause">Товар за 1 500 ₽ помечается «было 11 000 ₽». Покупатель видит это постоянно.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#c87a3a; background:#f8f0e8;"></div>
+          <div class="timeline-phase" style="color:#c87a3a;">Следствие 1</div>
+          <div class="timeline-event">Цинизм и неверие в скидки</div>
+          <div class="timeline-cause">Покупатель больше не радуется скидке — он подозревает обман. «Скидка 90%» вызывает смех, а не желание купить.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#6a9b4a; background:#f0f8e8;"></div>
+          <div class="timeline-phase" style="color:#6a9b4a;">Возможность D2C</div>
+          <div class="timeline-event">Бренд с честной ценой = выигрыш на доверии</div>
+          <div class="timeline-cause">Простая цена без игр + объяснение (себестоимость + наценка) = мощное конкурентное преимущество. Для уставшего от лжи покупателя — глоток воздуха.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:#4a6aa8; background:#e8eff8;"></div>
+          <div class="timeline-phase" style="color:#4a6aa8;">Следствие 2</div>
+          <div class="timeline-event">Лояльность > скидки</div>
+          <div class="timeline-cause">Покупатель, который доверяет бренду, возвращается без рекламы. LTV растёт, CAC падает. Честность — дешевле скидок в долгосрочной перспективе.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DATA COMBINE PAGE -->
+<div class="page" id="page-data-combine">
+  <div class="chapter-header">
+    <div class="chapter-page-eyebrow">Источники данных</div>
+    <h2 class="chapter-page-title">Объединение <em>слоёв</em></h2>
+  </div>
+  <div class="detail-content">
+    <div class="info-card">
+      <div class="info-card-title"> Архитектура единого Data Warehouse</div>
+      <div class="info-card-body">
+        <strong>Шаг 1. Сбор:</strong> API маркетплейсов + ОФД + телеком BigData + геосервисы<br>
+        <strong>Шаг 2. Очистка (ETL):</strong> удаление персональных данных, нормализация форматов, геокодирование<br>
+        <strong>Шаг 3. Хранение:</strong> ClickHouse (быстро для аналитики) или PostgreSQL + PostGIS<br>
+        <strong>Шаг 4. Аналитика:</strong> DataLens / Power BI для дашбордов<br>
+        <strong>Шаг 5. Геовизуализация:</strong> Геоинтеллект / Яндекс Карты API / собственный слой
+      </div>
+    </div>
+    <div class="compare-widget">
+      <div class="compare-header"><h3>Уровни детализации по источникам</h3></div>
+      <table class="compare-table">
+        <thead><tr><th>Источник</th><th>Детализация</th><th>Гео-привязка</th></tr></thead>
+        <tbody>
+          <tr><td>ОФД (чеки)</td><td class="cell-win">SKU + количество + цена</td><td class="cell-win">Адрес кассы точный</td></tr>
+          <tr><td>Банки (транзакции)</td><td class="cell-loss">Сумма + категория магазина</td><td class="cell-win">Адрес POS-терминала</td></tr>
+          <tr><td>Телеком (BigData)</td><td class="cell-mid">Интересы + демография</td><td class="cell-win">Геозоны, перемещения</td></tr>
+          <tr><td>API Маркетплейсов</td><td class="cell-win">SKU + количество (только свои)</td><td class="cell-mid">Город / регион</td></tr>
+          <tr><td>MPSTATS / Moneyplace</td><td class="cell-mid">Категории + тренды</td><td class="cell-mid">Регион, не район</td></tr>
+          <tr><td>PIM.Data</td><td class="cell-win">24 категории + профиль</td><td class="cell-win">До улицы и индекса</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title"> Вывод: комбинация даёт максимум</div>
+      <div class="info-card-body">
+        <strong>ОФД</strong> = что купили (точно) + <strong>Телеком</strong> = кто это (профиль) + <strong>2ГИС/Геоинтеллект</strong> = где живут (карта) = полная картина покупательского поведения в районе.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── NAVIGATION ───
+const history_stack = [];
+let current_page = 'home';
+
+function goTo(id) {
+  history_stack.push(current_page);
+  showPage(id);
+}
+
+function goToDetail(id) {
+  history_stack.push(current_page);
+  showPage(id);
+}
+
+function goBack() {
+  if (history_stack.length) {
+    const prev = history_stack.pop();
+    showPage(prev, true);
+  }
+}
+
+function showPage(id, isBack = false) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + id);
+  if (el) {
+    el.classList.add('active');
+    current_page = id;
+  }
+  updateNav(id);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Init widgets if needed
+  if (id === 'pvz-risks') initRiskMap();
+  if (id === 'd2c-margin') calcMargin();
+  if (id === 'd2c-tradeoff') calcTradeoff();
+  if (id === 'pvz-profit') calcPvz();
+  if (id === 'pvz-multi') calcMulti();
+  if (id === 'mech-auction') calcDutch();
+  if (id === 'geo-heatmap') initHeatmap();
+}
+
+function updateNav(id) {
+  const labels = {
+    home: 'Главная',
+    d2c: 'D2C vs Маркетплейс', pvz: 'Экономика ПВЗ',
+    data: 'Источники данных', mechanics: 'Механики продаж',
+    crm: 'CRM для ПВЗ', geoservice: 'Геосервис', global: 'Мировые аналоги',
+    'd2c-compare': 'Сравнение', 'd2c-margin': 'Маржинальность',
+    'd2c-tradeoff': 'Компромисс', 'd2c-strategy': 'Стратегии',
+    'd2c-price': 'Честная цена',
+    'pvz-profit': 'Калькулятор', 'pvz-risks': 'Карта рисков', 'pvz-multi': 'Мульти-ПВЗ',
+    'data-sources': 'Источники', 'data-ofd': 'ОФД', 'data-geo': 'Геоинтеллект', 'data-combine': 'Объединение',
+    'mech-auction': 'Аукционы', 'mech-novelty': 'Новизна', 'mech-honest': 'Честная цена',
+    'crm-arch': 'Архитектура', 'crm-law': '152-ФЗ', 'crm-onboard': 'Онбординг',
+    'geo-heatmap': 'Тепловая карта', 'geo-monetize': 'Монетизация', 'geo-roadmap': 'Дорожная карта',
+    'global-map': 'Карта игроков', 'global-diff': 'Россия vs Запад',
+  };
+
+  const bc = document.getElementById('breadcrumb');
+  const nb = document.getElementById('navBack');
+
+  if (id === 'home') {
+    bc.innerHTML = '<span class="crumb current">Главная</span>';
+    nb.style.display = 'none';
+  } else {
+    let html = '<span class="crumb" onclick="goTo(\'home\')">Главная</span><span class="sep">/</span>';
+    html += `<span class="crumb current">${labels[id] || id}</span>`;
+    bc.innerHTML = html;
+    nb.style.display = 'flex';
+  }
+}
+
+// ─── MARGIN CALC ───
+function calcMargin() {
+  const costI = document.querySelector('#page-d2c-margin input[type=range]:nth-of-type(1)');
+  const commI = document.querySelector('#page-d2c-margin input[type=range]:nth-of-type(2)');
+  const markI = document.querySelector('#page-d2c-margin input[type=range]:nth-of-type(3)');
+  const cacI = document.querySelector('#page-d2c-margin input[type=range]:nth-of-type(4)');
+
+  const inputs = document.querySelectorAll('#page-d2c-margin input[type=range]');
+  const cost = +inputs[0].value, comm = +inputs[1].value / 100, markup = +inputs[2].value / 100, cac = +inputs[3].value;
+
+  document.getElementById('cost-val').textContent = cost.toLocaleString('ru') + ' ₽';
+  document.getElementById('comm-val').textContent = Math.round(inputs[1].value) + '%';
+  document.getElementById('markup-val').textContent = Math.round(inputs[2].value) + '%';
+  document.getElementById('cac-val').textContent = cac.toLocaleString('ru') + ' ₽';
+
+  document.getElementById('cost-fill').style.width = ((cost - 100) / 1900 * 100) + '%';
+  document.getElementById('comm-fill').style.width = ((+inputs[1].value - 10) / 30 * 100) + '%';
+  document.getElementById('markup-fill').style.width = ((+inputs[2].value - 10) / 190 * 100) + '%';
+  document.getElementById('cac-fill').style.width = (cac / 1000 * 100) + '%';
+
+  const mpSell = cost * (1 + markup) / (1 - comm);
+  const mpMargin = mpSell * (1 - comm) - cost;
+  const d2cSell = Math.max(cost * (1 + markup * 0.7), cost + cac + 50);
+  const d2cMargin = d2cSell - cost - cac;
+
+  document.getElementById('mp-price').textContent = Math.round(mpSell).toLocaleString('ru') + ' ₽';
+  document.getElementById('mp-margin').textContent = Math.round(mpMargin).toLocaleString('ru') + ' ₽';
+  document.getElementById('d2c-price').textContent = Math.round(d2cSell).toLocaleString('ru') + ' ₽';
+  document.getElementById('d2c-margin').textContent = Math.round(d2cMargin).toLocaleString('ru') + ' ₽';
+
+  const saving = mpSell - d2cSell;
+  const v = document.getElementById('margin-verdict');
+  if (saving > 0) {
+    v.innerHTML = `D2C дешевле на <strong>${Math.round(saving).toLocaleString('ru')} ₽ (${Math.round(saving/mpSell*100)}%)</strong> — при CAC ${cac} ₽ D2C выгоднее`;
+    v.style.color = '#4a8c6a';
+  } else {
+    v.innerHTML = `При CAC ${cac} ₽ D2C выгоднее только при наличии собственной аудитории`;
+    v.style.color = '#9b5a5a';
+  }
+}
+
+// ─── TRADEOFF CALC ───
+function calcTradeoff() {
+  const inputs = document.querySelectorAll('#page-d2c-tradeoff input[type=range]');
+  const ps = +inputs[0].value, pd = +inputs[1].value, t = +inputs[2].value;
+
+  document.getElementById('price-sens-val').textContent = ps + '%';
+  document.getElementById('price-diff-val').textContent = pd + '%';
+  document.getElementById('time-val').textContent = t + ' мин';
+
+  document.getElementById('ps-fill').style.width = ps + '%';
+  document.getElementById('pd-fill').style.width = (pd / 40 * 100) + '%';
+  document.getElementById('t-fill').style.width = (t / 60 * 100) + '%';
+
+  const conv = Math.min(95, Math.round(ps * 0.4 + pd * 1.5 - t * 0.3));
+  document.getElementById('tradeoff-conv').textContent = Math.max(0, conv) + '%';
+  const desc = conv > 60 ? 'Сильная мотивация — аудитория перейдёт в D2C' :
+               conv > 30 ? 'Умеренная — нужен дополнительный стимул' :
+               'Слабая — маркетплейс предпочтительнее для этой аудитории';
+  document.getElementById('tradeoff-desc').textContent = desc;
+}
+
+// ─── PVZ CALC ───
+function calcPvz() {
+  const inputs = document.querySelectorAll('#page-pvz-profit input[type=range]');
+  const turnover = +inputs[0].value, comm = +inputs[1].value / 100;
+  const rent = +inputs[2].value, fot = +inputs[3].value;
+
+  document.getElementById('pvz-turnover-val').textContent = (+inputs[0].value).toLocaleString('ru') + ' ₽';
+  document.getElementById('pvz-comm-val').textContent = inputs[1].value + '%';
+  document.getElementById('pvz-rent-val').textContent = rent.toLocaleString('ru') + ' ₽';
+  document.getElementById('pvz-fot-val').textContent = fot.toLocaleString('ru') + ' ₽';
+
+  document.getElementById('pvz-t-fill').style.width = ((turnover - 100000) / 1400000 * 100) + '%';
+  document.getElementById('pvz-c-fill').style.width = ((+inputs[1].value - 1) / 6 * 100) + '%';
+  document.getElementById('pvz-r-fill').style.width = ((rent - 10000) / 90000 * 100) + '%';
+  document.getElementById('pvz-f-fill').style.width = ((fot - 20000) / 100000 * 100) + '%';
+
+  const income = turnover * comm;
+  const costs = rent + fot;
+  const net = income - costs;
+
+  document.getElementById('pvz-income').textContent = Math.round(income).toLocaleString('ru') + ' ₽';
+  document.getElementById('pvz-costs').textContent = costs.toLocaleString('ru') + ' ₽';
+  document.getElementById('pvz-net').textContent = Math.abs(Math.round(net)).toLocaleString('ru') + (net < 0 ? ' ₽ убыток' : ' ₽');
+  document.getElementById('pvz-net').style.color = net >= 0 ? 'var(--dark)' : '#c85a5a';
+
+  let verdict = '';
+  if (net > 100000) verdict = ' Отличная точка';
+  else if (net > 50000) verdict = ' Прибыльно';
+  else if (net > 0) verdict = ' Едва в плюсе';
+  else verdict = '❌ Убыток';
+  document.getElementById('pvz-verdict').textContent = verdict;
+}
+
+// ─── MULTI CALC ───
+function calcMulti() {
+  const n = +document.querySelector('#page-pvz-multi input[type=range]').value;
+  document.getElementById('multi-count-val').textContent = n;
+  document.getElementById('multi-fill').style.width = ((n - 1) / 19 * 100) + '%';
+
+  const baseProfit = 35000;
+  const scaleBonus = n > 3 ? 1 + (n - 3) * 0.12 : 1;
+  const total = Math.round(baseProfit * n * scaleBonus);
+  const roi = Math.min(38, Math.round(5 + (n - 1) * 1.8));
+
+  document.getElementById('multi-total').textContent = total.toLocaleString('ru') + ' ₽';
+  document.getElementById('multi-roi').textContent = roi + '%';
+}
+
+// ─── DUTCH CALC ───
+function calcDutch() {
+  const inputs = document.querySelectorAll('#page-mech-auction input[type=range]');
+  const start = +inputs[0].value, step = +inputs[1].value, floor = +inputs[2].value;
+
+  document.getElementById('dutch-start-val').textContent = start.toLocaleString('ru') + ' ₽';
+  document.getElementById('dutch-step-val').textContent = step + ' ₽';
+  document.getElementById('dutch-floor-val').textContent = floor.toLocaleString('ru') + ' ₽';
+
+  document.getElementById('ds-fill').style.width = ((start - 500) / 4500 * 100) + '%';
+  document.getElementById('dstep-fill').style.width = ((step - 10) / 190 * 100) + '%';
+  document.getElementById('df-fill').style.width = ((floor - 100) / 2900 * 100) + '%';
+
+  const steps = Math.ceil((start - floor) / step);
+  const minutes = steps * 10;
+
+  document.getElementById('dutch-range').textContent = floor.toLocaleString('ru') + '–' + start.toLocaleString('ru') + ' ₽';
+  document.getElementById('dutch-time').textContent = minutes + ' мин';
+}
+
+// ─── RISK MAP ───
+const risks = [
+  { name: 'Конкуренция: новый ПВЗ рядом', prob: 0.75, impact: 0.4, color: '#c88a4a', detail: 'Маркетплейс может открыть собственную точку после разведки через партнёра. Часто + умеренный ущерб.' },
+  { name: 'Штрафы за ошибки', prob: 0.65, impact: 0.35, color: '#9b6a6a', detail: 'Нарушение рейтинга, брак, ошибки приёмки. Высокая вероятность, умеренный ущерб. Решение: строгие SOP.' },
+  { name: 'Падение выручки на 30–60%', prob: 0.55, impact: 0.7, color: '#7a4a9b', detail: 'Рынок перенасыщается, новые ПВЗ отбирают клиентов. Высокая вероятность, значительный ущерб.' },
+  { name: 'Мошенничество сотрудников', prob: 0.3, impact: 0.5, color: '#c85a5a', detail: 'Выдача товаров без сканирования, кражи. Средняя вероятность, высокий ущерб. Решение: камеры + инвентаризация.' },
+  { name: 'Фальшивые заказы конкурентов', prob: 0.2, impact: 0.6, color: '#4a6aa8', detail: 'Конкуренты оформляют крупные партии на ваш ПВЗ и не выкупают — парализует работу. Редко, но очень болезненно.' },
+  { name: 'Изменение правил маркетплейса', prob: 0.45, impact: 0.55, color: '#6a8a4a', detail: 'Снижение ставки комиссии для вас или изменение условий партнёрства без предупреждения.' },
+  { name: 'Повышение аренды', prob: 0.5, impact: 0.3, color: '#9b8a4a', detail: 'Арендодатель видит, что бизнес выгодный, и поднимает цену. Довольно вероятно, умеренный ущерб.' },
+  { name: 'Нарушение 152-ФЗ', prob: 0.15, impact: 0.85, color: '#c83a3a', detail: 'Утечка персональных данных или незаконная передача. Редко, но катастрофический ущерб: штрафы до 18 млн ₽.' },
+];
+
+function initRiskMap() {
+  const grid = document.getElementById('riskGrid');
+  // Remove old dots
+  grid.querySelectorAll('.risk-dot').forEach(d => d.remove());
+
+  risks.forEach((r, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'risk-dot';
+    dot.style.cssText = `
+      width: ${28 + r.impact * 20}px;
+      height: ${28 + r.impact * 20}px;
+      background: ${r.color};
+      animation-delay: ${i * 0.08}s;
+    `;
+    dot.title = r.name;
+
+    // Map prob (0-1) to column (0-1), impact to row (0-1, 0=top=high impact)
+    // Grid is 2x2, each cell is ~50% of grid
+    // prob: x axis (0=left=low, 1=right=high)
+    // impact: y axis (0=bottom=low, 1=top=high)
+    const pct_x = r.prob * 100;
+    const pct_y = (1 - r.impact) * 100;
+
+    dot.style.left = `calc(${pct_x}% - ${(28 + r.impact * 20)/2}px)`;
+    dot.style.top = `calc(${pct_y}% - ${(28 + r.impact * 20)/2}px)`;
+    dot.style.position = 'absolute';
+
+    dot.addEventListener('click', () => {
+      const det = document.getElementById('riskDetail');
+      det.innerHTML = `<div class="risk-detail-name">${r.name}</div>${r.detail}`;
+      det.style.borderLeft = `3px solid ${r.color}`;
+    });
+
+    // Place in the overlay div
+    let overlay = grid.querySelector('.risk-dot-container');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'risk-dot-container';
+      overlay.style.cssText = 'position:absolute; inset:0; pointer-events:none; z-index:10;';
+      grid.style.position = 'relative';
+      grid.appendChild(overlay);
+    }
+    overlay.style.pointerEvents = 'none';
+    dot.style.pointerEvents = 'all';
+    overlay.appendChild(dot);
+  });
+}
+
+// ─── FUNNEL DETAIL ───
+const funnelDetails = [
+  { name: ' Геоотчёт по локации', body: 'Разовый отчёт: демография района, конкуренты, спрос по категориям. Целевая аудитория: предприниматели, выбирающие место для бизнеса. Цикл сделки: 1–2 недели.' },
+  { name: ' Ежемесячная аналитика', body: 'Подписка: топ-10 товаров по районам, тренды, сезонность. Для селлеров WB/Ozon: «В вашем районе растёт спрос на X — завозите». Позволяет управлять остатками.' },
+  { name: ' Гиперлокальная реклама', body: 'Таргетинг рекламы локального бизнеса на конкретный район. Зная, что покупают люди из дома N, магазин показывает им релевантную рекламу. Стоимость лида падает в 3–5 раз.' },
+  { name: ' API-доступ', body: 'Крупные ритейл-сети платят за прямой API-доступ к базе спроса. Сценарии: выбор локаций для даркстора, прогноз ассортимента, оценка конкурентной среды.' },
+  { name: ' Прогноз + консалтинг', body: 'ML-модель предсказывает: какой товар станет дефицитным в районе через 30 дней? Продаётся как консалтинговый проект крупному ритейлу или инвестфонду.' },
+];
+
+function showFunnelDetail(i) {
+  const d = document.getElementById('funnelDetail');
+  d.innerHTML = `<div class="risk-detail-name">${funnelDetails[i].name}</div>${funnelDetails[i].body}`;
+}
+
+// ─── HEATMAP ───
+let currentCategory = 'tech';
+const categoryColors = {
+  tech: { r: 74, g: 107, b: 168 },
+  kids: { r: 168, g: 74, b: 130 },
+  food: { r: 74, g: 155, b: 100 },
+};
+
+const heatData = {
+  tech: [[0.9,0.4,0.2,0.7,0.8,0.3],[0.5,0.8,0.9,0.4,0.6,0.9],[0.3,0.6,0.7,0.8,0.3,0.5],[0.7,0.9,0.5,0.3,0.8,0.4]],
+  kids: [[0.3,0.7,0.8,0.4,0.2,0.6],[0.8,0.5,0.3,0.7,0.9,0.4],[0.9,0.4,0.6,0.8,0.5,0.7],[0.4,0.6,0.9,0.5,0.7,0.3]],
+  food: [[0.6,0.8,0.7,0.5,0.4,0.9],[0.4,0.3,0.8,0.9,0.7,0.5],[0.8,0.7,0.4,0.3,0.9,0.6],[0.5,0.9,0.6,0.7,0.3,0.8]],
+};
+
+function setCategory(cat) {
+  currentCategory = cat;
+  ['tech','kids','food'].forEach(c => {
+    const btn = document.getElementById('btn-' + c);
+    if (c === cat) {
+      btn.style.background = 'rgba(229,238,245,0.8)';
+      btn.style.fontWeight = '600';
+    } else {
+      btn.style.background = 'rgba(255,255,255,0.5)';
+      btn.style.fontWeight = 'normal';
+    }
+  });
+  drawHeatmap();
+}
+
+function initHeatmap() {
+  drawHeatmap();
+}
+
+function drawHeatmap() {
+  const canvas = document.getElementById('heatmapCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Background
+  ctx.fillStyle = 'rgba(229, 238, 245, 0.3)';
+  ctx.fillRect(0, 0, w, h);
+
+  const data = heatData[currentCategory];
+  const { r, g, b } = categoryColors[currentCategory];
+  const rows = data.length, cols = data[0].length;
+  const cellW = w / cols, cellH = h / rows;
+
+  const labels = [['Юнтолово-Зап','Юнтолово-Вост','Ланское-Юг','Ланское-Центр','Ком.Аэр.-1','Ком.Аэр.-2'],
+    ['Юнтолово-2А','Юнтолово-2Б','Ланское-Ст.','Ланское-Нов','Ком.Аэр.-3','Ком.Аэр.-4'],
+    ['Юнтолово-3А','Юнтолово-3Б','Ланское-3А','Ланское-3Б','Ком.Аэр.-5','Ком.Аэр.-6'],
+    ['Юнтолово-4А','Юнтолово-4Б','Ланское-4А','Ланское-4Б','Ком.Аэр.-7','Ком.Аэр.-8']];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const val = data[row][col];
+      const x = col * cellW, y = row * cellH;
+
+      // Cell fill
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${val * 0.85})`;
+      ctx.beginPath();
+      ctx.roundRect(x + 3, y + 3, cellW - 6, cellH - 6, 8);
+      ctx.fill();
+
+      // Label
+      ctx.fillStyle = val > 0.6 ? 'rgba(255,255,255,0.9)' : 'rgba(60,50,40,0.6)';
+      ctx.font = `11px 'DM Sans', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labels[row][col], x + cellW/2, y + cellH/2 - 8);
+
+      // Value
+      ctx.fillStyle = val > 0.6 ? 'rgba(255,255,255,0.7)' : 'rgba(60,50,40,0.4)';
+      ctx.font = `bold 14px 'DM Sans', sans-serif`;
+      ctx.fillText(Math.round(val * 800 + 100) + ' ед.', x + cellW/2, y + cellH/2 + 10);
+    }
+  }
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
+  for (let col = 1; col < cols; col++) {
+    ctx.beginPath(); ctx.moveTo(col * cellW, 0); ctx.lineTo(col * cellW, h); ctx.stroke();
+  }
+  for (let row = 1; row < rows; row++) {
+    ctx.beginPath(); ctx.moveTo(0, row * cellH); ctx.lineTo(w, row * cellH); ctx.stroke();
+  }
+}
+
+// ─── INIT ───
+calcMargin();
+calcPvz();
+calcMulti();
+calcTradeoff();
+calcDutch();
+</script>
+</body>
+</html>
